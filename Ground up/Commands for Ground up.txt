@@ -1,0 +1,130 @@
+Nat1 Router
+	// Enabling DHCP
+	en
+	conf t
+	int s2/0
+	ip address 192.168.103.1 255.255.255.248
+	no shut
+	
+	ip dhcp pool 'Nat1'
+	network 192.168.104.0 255.255.255.0
+	dns-server 192.168.104.253
+	default-router 192.168.104.254
+	exit
+	ip dhcp excluded-address 192.168.104.1 192.168.104.10
+	ip dhcp excluded-address 192.168.104.244 192.168.104.254
+	// Enalbing nat
+		//inside
+	int f0/0
+	ip nat inside
+		//ouside
+	int s2/0
+	ip nat outside
+	ip access-list standard NAT1
+	permit 192.168.104.0 0.0.0.255
+	exit
+	ip nat inside source list NAT1 interface s2/0 overload
+	// ENABLING OSPF
+	router ospf 1
+	network 192.168.103.0 0.0.0.7 area 0
+	network 192.168.104.0 0.0.0.0 area 0   //1
+	//adding 3rd router
+	int s3/0
+	ip address 192.168.101.1 255.255.255.248
+	no shut
+	ip nat outside
+	ip nat inside source list NAT1 interface s3/0 overload
+	router ospf 1
+	network 192.168.101.0 0.0.0.7 area 0
+	// Trunk
+	int fa0/0.1
+	encapsulation dot1q 10
+	ip address 192.168.204.1 255.255.255.0
+	not shut
+	int fa0/0.2
+	encapsulation dot1q 20
+	ip address 192.168.205.1 255.255.255.0
+	no shut
+	int fa0/0.3
+	enapsulation dot1q 30
+	ip address 192.168.206.1 255.255.255.0
+	no shut
+	exit
+	show running config
+	
+Nat2 Router
+	en
+	conf t
+	int s2/0
+	ip address 192.168.103.2 255.255.255.248
+	no shut
+	router ospf 2
+	network 192.168.103.0 0.0.0.7 area 0
+	netowrk 10.10.10.0 0.0.0.7 area 0
+	int s3/0
+	network 192.168.102.1 255.255.255.248
+	no shut
+	router ospf 2
+	network 192.168.102.0 0.0.0.7 area 0
+Nat3 Router
+	en
+	conf t
+	int s3/0
+	ip address 192.168.101.2 255.255.255.248
+	no shut
+	exit
+	router ospf 3
+	network 192.168.101.0 0.0.0.7 area 0
+	exit
+	int s2/0
+	ip address 192.168.102.2 255.255.255.248
+	no shut
+	router ospf 3
+	network 192.168.102.0 0.0.0.7 area 0
+	
+S2
+	en
+	conf t
+	vlan 20
+	int f0/4
+	switchport mode access
+	swithcport access vlan 20
+	int fa0/3
+	switchport mode access
+	switchport access vlan 20
+	int fa0/1
+	switchport mode trunk
+	end
+	int fa0/2
+	switchport mode trunk
+	
+s3
+	en
+	conf t
+	vlan 30
+	int f0/4
+	switchport mode access
+	switchport access vlan 30
+	int f0/3
+	switchport mode access
+	switchport access vlan 30
+	int fa0/2
+	switchport mode trunk
+	int fa0/1	
+	switchport mode trunk
+s1
+	en
+	conf t
+	vlan 10
+	int fa0/3
+	switchport mode access
+	switchport access vlan 10
+	int fa0/4
+	switchport mode access
+	switchport access vlan 10
+	int fa0/5
+	switchport mode trunk
+	int fa0/1
+	switchport trunk
+	int fa0/2
+	switchport trunk
