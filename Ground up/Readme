@@ -1,0 +1,19 @@
+Final Packet Tracer File in this directory is finalized and working file.
+
+Ground up 2.1
+  Nat 1 Network
+    OSPF Area 0 and 1
+    PAT enabled 192.168.104.0 /24
+    No VLAN
+    DHCP Enabled
+  Nat 2 Network
+    OSPF Area 0 and 2
+    PC with Static IP
+  NAT 3
+    OSPF Area 0
+  Corp 1
+    OSPF Area 0 and 5
+    PAT enabled for VLAN
+    VLAN 10, 20, 30
+    DHCP for VLAN 10, 20, 30
+  
